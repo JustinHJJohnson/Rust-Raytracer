@@ -1,10 +1,13 @@
 mod ray;
 mod vec3;
+mod objects;
 
 use ray::{Ray, ray};
 use vec3::{Vec3, Point};
+use objects::{Sphere};
 use image::{ImageBuffer, Rgb};
 use image::imageops::{flip_vertical_in_place};
+use std::time::{Instant};
 
 use Vec3 as Color;
 
@@ -20,22 +23,22 @@ fn unit_vector(vec: Vec3) -> Vec3 {
 
 fn hit_sphere(center: Point, radius: f64, r: &Ray) -> f64 {
     let oc: Vec3 = r.origin() - center;
-    let a: f64 = Vec3::dot(&r.direction(), &r.direction());
-    let b: f64 = 2.0 * Vec3::dot(&oc, &r.direction());
-    let c: f64 =  Vec3::dot(&oc, &oc) - radius * radius;
-    let discriminant: f64 = b * b - 4.0 * a * c;
+    let a: f64 = r.direction().length_squared();
+    let half_b: f64 = Vec3::dot(&oc, &r.direction());
+    let c: f64 =  oc.length_squared() - radius * radius;
+    let discriminant: f64 = half_b * half_b - a * c;
     if discriminant < 0.0 {
         return -1.0
     } else {
-        return (-b - discriminant.sqrt()) / (2.0 * a)
+        return (-half_b - discriminant.sqrt()) / a
     }
 }
 
 fn ray_color(r: Ray) -> Color {
     let mut t: f64 = hit_sphere(Vec3::new(0.0, 0.0, -1.0) as Point, 0.5, &r);
     if t > 0.0 {
-        let N: Vec3 = unit_vector(r.at(t) - Vec3::new(0.0, 0.0, -1.0));
-        return 0.5 * (N + 1.0);
+        let n: Vec3 = unit_vector(r.at(t) - Vec3::new(0.0, 0.0, -1.0));
+        return 0.5 * (n + 1.0);
     }
     let unit_direction: Vec3 = unit_vector(r.direction());
     t = 0.5 * (unit_direction.y + 1.0);
@@ -59,6 +62,8 @@ fn main() {
     let vertical: Vec3 = Vec3::new(0.0, viewport_height, 0.0);
     let lower_left_corner: Point = origin - horizontal / 2.0 - vertical / 2.0 - Vec3::new(0.0, 0.0, focal_length);
 
+    let timer = Instant::now();
+
     //Render
     for (x,y,pixel) in img.enumerate_pixels_mut() {
         eprint!("\rScanlines remaining: {}", (image_height - 1) - y);
@@ -72,6 +77,9 @@ fn main() {
         *pixel = Rgb(tonemap_pixel(pixel_color));
     }
 
+    println!("\nElapsed time: {}ms", timer.elapsed().as_millis());
+    //7739
+
     flip_vertical_in_place(&mut img);
-    img.save("output/test4.png").unwrap()
+    img.save("output/test5.png").unwrap()
 }
