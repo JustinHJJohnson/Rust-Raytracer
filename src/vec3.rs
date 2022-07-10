@@ -481,7 +481,7 @@ mod tests {
 
     #[test]
     fn with_component() {
-        let mut a = Vec3::new(3.0, 2.0, 1.0);
+        let a = Vec3::new(3.0, 2.0, 1.0);
         assert_eq!(a.with_x(4.0), Vec3::new(4.0, 2.0, 1.0));
         assert_eq!(a.with_y(4.0), Vec3::new(3.0, 4.0, 1.0));
         assert_eq!(a.with_z(4.0), Vec3::new(3.0, 2.0, 4.0));
