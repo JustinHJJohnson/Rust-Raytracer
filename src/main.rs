@@ -18,7 +18,19 @@ fn unit_vector(vec: Vec3) -> Vec3 {
     vec.normalize()
 }
 
+fn hit_sphere(center: Point, radius: f64, r: &Ray) -> bool {
+    let oc: Vec3 = r.origin() - center;
+    let a: f64 = Vec3::dot(&r.direction(), &r.direction());
+    let b: f64 = 2.0 * Vec3::dot(&oc, &r.direction());
+    let c: f64 =  Vec3::dot(&oc, &oc) - radius * radius;
+    let discriminant: f64 = b * b - 4.0 * a * c;
+    return discriminant > 0.0;
+}
+
 fn ray_color(r: Ray) -> Color {
+    if hit_sphere(Vec3::new(0.0, 0.0, 1.0) as Point, 0.5, &r) {
+        return Vec3::new(1.0, 0.0, 0.0);
+    }
     let unit_direction: Vec3 = unit_vector(r.direction());
     let t: f64 = 0.5 * (unit_direction.y + 1.0);
     return (1.0 - t) * Vec3::ONE + t * Vec3::new(0.5, 0.7, 1.0) as Color
@@ -55,5 +67,5 @@ fn main() {
     }
 
     flip_vertical_in_place(&mut img);
-    img.save("test3.png").unwrap()
+    img.save("output/test3.png").unwrap()
 }

@@ -1,3 +1,5 @@
+//This code is completely stolen from https://github.com/ryankaplan/vec3
+
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 #[derive(Debug, Copy, Clone)]
