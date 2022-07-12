@@ -1,6 +1,7 @@
 //This code is completely stolen from https://github.com/ryankaplan/vec3
 
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
+use crate::utility::{random_float, random_float_in_range};
 
 #[derive(Debug, Copy, Clone)]
 pub enum Axis {
@@ -29,6 +30,16 @@ impl Vec3 {
         y: 1.0,
         z: 1.0,
     };
+
+    #[inline]
+    pub fn random() -> Vec3 {
+      Vec3 { x: random_float(), y: random_float(), z: random_float() }
+    }
+    
+    #[inline]
+    pub fn random_in_range(min: f64, max: f64) -> Vec3 {
+      Vec3 { x: random_float_in_range(min, max), y: random_float_in_range(min, max), z: random_float_in_range(min, max) }
+    }
 
     pub fn from_float(value: f64) -> Vec3 {
         Vec3 {

@@ -10,7 +10,7 @@ use vec3::{Vec3, Point};
 use objects::{Sphere};
 use hittable::{HitResult, HittableList};
 use camera::Camera;
-use utility::random_float;
+use utility::{random_float, random_in_unit_sphere};
 use image::{ImageBuffer, Rgb};
 use image::imageops::{flip_vertical_in_place};
 use std::time::{Instant};
@@ -19,16 +19,16 @@ use Vec3 as Color;
 
 
 #[inline]
-fn tonemap_pixel(color: Color, samples: f64) -> [u8; 3] {
+fn color_pixel(color: Color, samples: f64) -> [u8; 3] {
     let mut r: f64 = color.x;
     let mut g: f64 = color.y;
     let mut b: f64 = color.z;
 
+    //Divide the color by the number of samples and gamma-correct for gamma=2.0
     let scale: f64 = 1.0 / samples;
-
-    r *= scale;
-    g *= scale;
-    b *= scale;
+    r = (scale * r).sqrt();
+    g = (scale * g).sqrt();
+    b = (scale * b).sqrt();
 
     [
         (255.999 * r.clamp(0.0, 0.999)) as u8,
@@ -42,10 +42,14 @@ fn unit_vector(vec: Vec3) -> Vec3 {
     vec.normalize()
 }
 
-fn ray_color(r: Ray, world: &HittableList) -> Color {
-    let result: HitResult = world.hit(&r, 0.0, f64::INFINITY);
+fn ray_color(r: Ray, world: &HittableList, depth: u32) -> Color {
+    let result: HitResult = world.hit(&r, 0.001, f64::INFINITY);
+
+    if depth <= 0 { return Vec3::ZERO as Color }
+
     if result.hit {
-        return 0.5 * (result.hit_record.normal + Vec3::ONE);
+        let target: Point = result.hit_record.p + result.hit_record.normal + random_in_unit_sphere();
+        return 0.5 * ray_color(ray(result.hit_record.p, target - result.hit_record.p), world, depth - 1);
     }
     let unit_direction: Vec3 = unit_vector(r.direction());
     let t: f64 = 0.5 * (unit_direction.y + 1.0);
@@ -59,6 +63,7 @@ fn main() {
     let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
     let mut img: ImageBuffer<Rgb<u8>, Vec<u8>> = ImageBuffer::new(image_width, image_height);
     let samples: f64 = 100.0;
+    let max_depth: u32 = 50;
 
     //World
     let mut world: HittableList = HittableList::hittable_list();
@@ -80,15 +85,16 @@ fn main() {
             let v: f64 = (y as f64 + random_float()) / (image_height - 1) as f64;
 
             let r: Ray = camera.get_ray(u, v);
-            pixel_color += ray_color(r, &world);
+            pixel_color += ray_color(r, &world, max_depth);
         }
 
-        *pixel = Rgb(tonemap_pixel(pixel_color, samples));
+        *pixel = Rgb(color_pixel(pixel_color, samples));
     }
 
     println!("\nElapsed time: {}ms", timer.elapsed().as_millis());
     //7739
+    //73036
 
     flip_vertical_in_place(&mut img);
-    img.save("output/test7.png").unwrap()
+    img.save("output/test9.png").unwrap()
 }
