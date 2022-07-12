@@ -8,8 +8,8 @@ pub struct Sphere {
 }
 
 impl Sphere {
-    pub fn sphere(center: Point, radius: f64) -> Sphere {
-        Sphere { center, radius }
+    pub fn sphere(x: f64, y: f64, z: f64, radius: f64) -> Sphere {
+        Sphere { center: Vec3::new(x, y, z), radius }
     }
 }
 
