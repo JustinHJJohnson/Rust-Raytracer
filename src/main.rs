@@ -10,7 +10,7 @@ use vec3::{Vec3, Point};
 use objects::{Sphere};
 use hittable::{HitResult, HittableList};
 use camera::Camera;
-use utility::{random_float, random_in_unit_sphere};
+use utility::{random_float, random_unit_vector, random_in_hemisphere};
 use image::{ImageBuffer, Rgb};
 use image::imageops::{flip_vertical_in_place};
 use std::time::{Instant};
@@ -48,7 +48,8 @@ fn ray_color(r: Ray, world: &HittableList, depth: u32) -> Color {
     if depth <= 0 { return Vec3::ZERO as Color }
 
     if result.hit {
-        let target: Point = result.hit_record.p + result.hit_record.normal + random_in_unit_sphere();
+        //let target: Point = result.hit_record.p + result.hit_record.normal + random_unit_vector();
+        let target: Point = result.hit_record.p + random_in_hemisphere(result.hit_record.normal);
         return 0.5 * ray_color(ray(result.hit_record.p, target - result.hit_record.p), world, depth - 1);
     }
     let unit_direction: Vec3 = unit_vector(r.direction());
@@ -96,5 +97,5 @@ fn main() {
     //73036
 
     flip_vertical_in_place(&mut img);
-    img.save("output/test9.png").unwrap()
+    img.save("output/test10.png").unwrap()
 }
